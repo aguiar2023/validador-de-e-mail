@@ -1,0 +1,57 @@
+[Test]
+public void IsDomainActive_NonExistentDomain_ReturnsFalse()
+{
+  // Arrange
+  string email = "example@nonexistentdomain.com";
+
+  // Act
+  bool result = validator.IsDomainActive(email);
+
+  // Assert
+  Assert.IsFalse(result);
+}
+public bool IsDomainActive(string email)
+{
+  try
+  {
+    string domain = email.Split('@')[1];
+    IPHostEntry hostEntry = Dns.GetHostEntry(domain);
+    return hostEntry.AddressList.Length > 0;
+  }
+  catch (Exception)
+  {
+    return false;
+  }
+}
+
+[Test]
+public void IsMailServerResponding_NonExistentDomain_ReturnsFalse()
+{
+  // Arrange
+  string email = "example@nonexistentdomain.com";
+
+  // Act
+  bool result = validator.IsMailServerResponding(email);
+
+  // Assert
+  Assert.IsFalse(result);
+}
+
+public bool IsMailServerResponding(string email)
+{
+  try
+  {
+    string domain = email.Split('@')[1];
+    int port = 25; // Common SMTP port
+
+    using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+    {
+      socket.Connect(new IPEndPoint(Dns.GetHostEntry(domain).AddressList[0], port));
+      return socket.Connected;
+    }
+  }
+  catch (Exception)
+  {
+    return false;
+  }
+}
